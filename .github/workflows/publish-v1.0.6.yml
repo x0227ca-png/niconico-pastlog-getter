@@ -1,0 +1,33 @@
+name: Publish PastLogGetter v1.0.6 prerelease
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dist/PastLogGetter_v1.0.6.zip"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Verify distribution SHA-256
+        run: |
+          echo "b43cf3cd6bf514d7dccae0115ae4fc92468f737aa6efcb5cd7da04da8b3f3c00  dist/PastLogGetter_v1.0.6.zip" | sha256sum -c -
+      - name: Publish ZIP to GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v1.0.6 >/dev/null 2>&1; then
+            gh release upload v1.0.6 dist/PastLogGetter_v1.0.6.zip --clobber
+          else
+            gh release create v1.0.6 dist/PastLogGetter_v1.0.6.zip \
+              --title "過去ログ取得 v1.0.6（動作確認中）" \
+              --notes-file RELEASE_NOTES_v1.0.6.md \
+              --prerelease
+          fi
